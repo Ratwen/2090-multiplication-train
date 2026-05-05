@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тренажёр умножения (3 класс)</title>
+  <style>
+    :root {
+      --primary: #4361ee;
+      --success: #2ecc71;
+      --error: #e74c3c;
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --text: #2c3e50;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #e0e7ff, #f8f9fa);
+      margin: 0;
+      padding: 20px;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      background: var(--card);
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      max-width: 600px;
+      width: 100%;
+      margin-top: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+      font-size: 1.6rem;
+      color: var(--primary);
+    }
+    .subtitle {
+      text-align: center;
+      color: #6c757d;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    select, button {
+      padding: 10px 14px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 2px solid var(--primary);
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    select:focus, button:focus { outline: none; box-shadow: 0 0 0 3px rgba(67,97,238,0.2); }
+    button {
+      background: var(--primary);
+      color: white;
+      font-weight: 500;
+    }
+    button:hover { background: #3651d4; transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    
+    .task-list { margin: 15px 0; }
+    .task-item {
+      background: #f1f5f9;
+      padding: 12px 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .task-label {
+      font-weight: 600;
+      font-size: 1.2rem;
+      min-width: 80px;
+    }
+    input[type="number"] {
+      width: 90px;
+      padding: 8px;
+      font-size: 1.1rem;
+      text-align: center;
+      border: 2px solid #cbd5e1;
+      border-radius: 6px;
+      transition: border-color 0.2s;
+    }
+    input[type="number"]:focus { border-color: var(--primary); outline: none; }
+    input:disabled { background: #e9ecef; cursor: not-allowed; }
+    
+    .feedback {
+      width: 100%;
+      margin-top: 6px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .correct { color: var(--success); font-weight: 600; }
+    .incorrect { color: var(--error); font-weight: 600; }
+    
+    .solution {
+      background: #fff8e1;
+      border-left: 4px solid #ffc107;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+    .solution strong { display: block; margin-bottom: 4px; color: #d97706; }
+    
+    .final-msg {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.1rem;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+    }
+    .final-msg.success { background: #d4edda; color: #155724; }
+    .final-msg.retry { background: #f8d7da; color: #721c24; }
+
+    @media (max-width: 480px) {
+      .task-label { min-width: 100%; font-size: 1.1rem; }
+      input[type="number"] { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧮 Тренажёр умножения</h1>
+    <p class="subtitle">Для учеников 3 класса • 3 уровня сложности</p>
+    
+    <div class="controls">
+      <select id="levelSelect">
+        <option value="1">Уровень 1: Цифра × Цифра</option>
+        <option value="2">Уровень 2: Цифра × Двузначное</option>
+        <option value="3">Уровень 3: Двузначное × Двузначное</option>
+      </select>
+      <button onclick="generateTasks()">🎲 Новые задания</button>
+    </div>
+
+    <div id="tasksContainer" class="task-list"></div>
+    <button id="checkBtn" onclick="checkAnswers()" style="display:none; width:100%; margin-top:15px;">✅ Проверить ответы</button>
+    <div id="finalMessage" class="final-msg"></div>
+  </div>
+
+  <script>
+    let currentTasks = [];
+
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    function generateTasks() {
+      const level = parseInt(document.getElementById('levelSelect').value);
+      const container = document.getElementById('tasksContainer');
+      const checkBtn = document.getElementById('checkBtn');
+      const finalMsg = document.getElementById('finalMessage');
+      
+      container.innerHTML = '';
+      finalMsg.style.display = 'none';
+      checkBtn.style.display = 'block';
+      currentTasks = [];
+
+      for (let i = 0; i < 5; i++) {
+        let a, b;
+        if (level === 1) {
+          a = rand(2, 9);
+          b = rand(2, 9);
+        } else if (level === 2) {
+          a = rand(2, 9);
+          b = rand(10, 99);
+        } else {
+          a = rand(10, 99);
+          b = rand(10, 99);
+        }
+
+        currentTasks.push({ a, b, correct: a * b, idx: i });
+
+        const div = document.createElement('div');
+        div.className = 'task-item';
+        div.innerHTML = `
+          <span class="task-label">${i + 1}. ${a} × ${b} =</span>
+          <input type="number" id="inp-${i}" step="1" min="0" placeholder="?" onkeydown="if(event.key==='Enter') checkAnswers()">
+          <div id="fb-${i}" class="feedback" style="display:none;"></div>
+        `;
+        container.appendChild(div);
+      }
+      setTimeout(() => document.getElementById('inp-0')?.focus(), 100);
+    }
+
+    // Формирование пошагового объяснения
+    function getExplanation(a, b) {
+      const correct = a * b;
+      
+      // 🟢 УРОВЕНЬ 1: Проверка сложением
+      if (a < 10 && b < 10) {
+        const addends = Array(b).fill(a).join(' + ');
+        return `<strong>📖 Ход решения:</strong><br>
+                Проверка сложением: ${a} × ${b} = ${addends} = <b>${correct}</b>`;
+      }
+
+      // 🟡🔴 УРОВНИ 2 и 3: Разложение двузначного числа
+      let num = b >= 10 ? b : a;
+      let mult = b >= 10 ? a : b;
+      const tens = Math.floor(num / 10) * 10;
+      const units = num % 10;
+
+      const p1 = mult * tens;
+      const p2 = mult * units;
+
+      return `
+        <strong>📖 Ход решения:</strong><br>
+        1. Разложим ${num} на десятки и единицы: <b>${tens} + ${units}</b><br>
+        2. Умножаем на десятки: ${mult} × ${tens} = <b>${p1}</b><br>
+        3. Умножаем на единицы: ${mult} × ${units} = <b>${p2}</b><br>
+        4. Складываем результаты: ${p1} + ${p2} = <b>${correct}</b>
+      `;
+    }
+
+    function checkAnswers() {
+      let errors = 0;
+      const finalMsg = document.getElementById('finalMessage');
+
+      currentTasks.forEach(task => {
+        const input = document.getElementById(`inp-${task.idx}`);
+        const fb = document.getElementById(`fb-${task.idx}`);
+        const val = input.value.trim();
+        
+        fb.style.display = 'block';
+        input.disabled = true;
+
+        if (val === '' || isNaN(Number(val)) || Number(val) < 0) {
+          fb.innerHTML = `<span class="incorrect">⚠️ Введите число</span>`;
+          errors++;
+          return;
+        }
+
+        const userAns = parseInt(val);
+        if (userAns === task.correct) {
+          fb.innerHTML = `<span class="correct">✅ Верно!</span>`;
+        } else {
+          fb.innerHTML = `<span class="incorrect">❌ Неверно. Правильный ответ: ${task.correct}</span>
+                          <div class="solution">${getExplanation(task.a, task.b)}</div>`;
+          errors++;
+        }
+      });
+
+      document.getElementById('checkBtn').style.display = 'none';
+      
+      if (errors === 0) {
+        finalMsg.className = 'final-msg success';
+        finalMsg.innerHTML = '🎉 Отлично! Все ответы верны. Молодец!';
+      } else {
+        finalMsg.className = 'final-msg retry';
+        finalMsg.innerHTML = `📝 Было допущено ошибок: ${errors}. Изучи решения и попробуй снова!`;
+      }
+      finalMsg.style.display = 'block';
+      finalMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    generateTasks();
+  </script>
+</body>
+</html>
